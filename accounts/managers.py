@@ -8,14 +8,6 @@ class UserManager(BaseUserManager):
     def create_user(
         self, full_name, email, phone_number, id_card_number, credit, password
     ):
-        if not email:
-            raise ValueError("user must have email")
-        if not phone_number:
-            raise ValueError("user must have phone_number")
-        if not full_name:
-            raise ValueError("user must have full_name")
-        if not id_card_number:
-            raise ValueError("user must have id card number!")
         user = self.model(
             full_name=Validate.full_name(full_name),
             email=Validate.email(email),
