@@ -55,6 +55,7 @@ class TransactionSellView(APIView):
         return Response(ser_data.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+        user = request.user
         ser_data = self.serializer_class(data=request.POST)
         if ser_data.is_valid():
             with transaction.atomic():
@@ -62,7 +63,7 @@ class TransactionSellView(APIView):
                 try:
                     transactionraise = Transaction.objects.create(
                         amount=valid_data["amount"],
-                        user=request.user,
+                        user=user,
                         to_number=valid_data["to_number"],
                     )
                     ser_data = self.serializer_class(instance=transactionraise)
@@ -70,4 +71,5 @@ class TransactionSellView(APIView):
                 except ValidationError as ex:
                     return Response(ex.error_dict, status=status.HTTP_400_BAD_REQUEST)
         else:
+            print(ser_data.errors)
             return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)

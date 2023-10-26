@@ -69,7 +69,7 @@ class UserLoginView(APIView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return Response("you are loged in", status=status.HTTP_100_CONTINUE)
+            return Response("you are loged in", status=status.HTTP_400_BAD_REQUEST)
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

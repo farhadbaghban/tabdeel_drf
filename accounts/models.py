@@ -11,7 +11,7 @@ class User(AbstractBaseUser):
         unique=True,
         validators=[
             RegexValidator(
-                regex=r"(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,25})?([ ]{0,1})?([A-Za-z]{3,25})?([ ]{0,1})?([A-Za-z]{3,25})",
+                regex=r"(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,45})?([ ]{0,1})?([A-Za-z]{3,25})?([ ]{0,1})?([A-Za-z]{3,15})",
                 message="only characters are allowed ",
                 code="invalid full_name",
             )

@@ -93,6 +93,8 @@ class UserAuthenticationTest(APITestCase):
         self.assertEquals(response_bad_request.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(response_true.status_code, status.HTTP_202_ACCEPTED)
 
+        print(dict(self.client.session))
+
     def test_user_logout(self):
         url = reverse("accounts:user_logout")
         self.client.login(phone_number="09397330002", password="123456")
