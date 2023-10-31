@@ -3,6 +3,7 @@ from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor
 from subprocess import call
 from random import randint
+import threading
 
 
 class ConcurrentTest:
@@ -43,7 +44,7 @@ class ConcurrentTest:
     def raise_credit(self, raise_amount):
         raise_data = {"is_raise": True, "amount": Decimal(raise_amount)}
         res = self.session.post(self.raise_credit_url, data=raise_data)
-        print(res.text)
+        # print(res.text)
         if res.status_code == 201:
             res = res.json()
             res = {"date": res["date"], "amount": res["amount"]}
@@ -52,7 +53,7 @@ class ConcurrentTest:
     def sell_amount_to_number(self, sell_amount, to_number):
         sell_data = {"amount": Decimal(sell_amount), "to_number": to_number}
         res = self.session.post(self.sell_url, data=sell_data)
-        print(res.text)
+        # print(res.text)
         if res.status_code == 201:
             res = res.json()
             res = {"date": res["date"], "amount": res["amount"]}
@@ -104,55 +105,88 @@ class ImplementationDataGenerator:
 call(["python", "manage.py", "flush", "--noinput"])
 
 
-impdata = ImplementationDataGenerator(40, 40, 40)
-impdata.generate()
 contest = ConcurrentTest()
 contest.register()
 contest.login_user()
-for i in range(40):
-    if randint(1, 13) % 2 == 0:
-        contest.raise_credit(impdata.credit_raises[i]["amount"])
-    else:
-        contest.sell_amount_to_number(
-            impdata.sell_amounts[i]["amount"], impdata.phone_numbers[i]["phone_number"]
-        )
 
 
 def equal_test_result():
+    impdata = ImplementationDataGenerator(40, 40, 40)
+    impdata.generate()
+    for i in range(40):
+        if randint(1, 3) % 2 == 0:
+            contest.raise_credit(impdata.credit_raises[i]["amount"])
+        else:
+            contest.sell_amount_to_number(
+                impdata.sell_amounts[i]["amount"],
+                impdata.phone_numbers[i]["phone_number"],
+            )
     equl_positive = Decimal(0)
     equl_mines = Decimal(0)
     for test in contest.test_raise_result:
         equl_positive += Decimal(test["amount"])
-        print(f"equl_positive  :  {equl_positive}")
+        # print(f"equl_positive  :  {equl_positive}")
     for test in contest.test_sell_result:
         equl_mines += Decimal(test["amount"])
-        print(f"equl_mines  :  {equl_mines}")
-    print("------------\n")
-    print("len raise (geting from db )")
-    print(contest.check_len_raise_transactions())
-    print("\n-------------\n")
-    print("------------\n")
-    print("len raise (geting from success status code  )")
-    print(len(contest.test_raise_result))
-    print("\n-------------\n")
-    print("------------\n")
-    print("len sell geting from db ")
-    print(contest.check_len_sell_transaction())
-    print("\n-------------\n")
-    print("------------\n")
-    print("len sell (geting from success status code) ")
-    print(len(contest.test_sell_result))
-    print("\n-------------\n")
+        # print(f"equl_mines  :  {equl_mines}")
     result = equl_positive - equl_mines
-    print(result)
 
-
-def run_tests():
-    with ThreadPoolExecutor(10) as exe:
-        exe.submit(
-            equal_test_result,
+    def print_some():
+        print(
+            f"\n ---------\n len raise (from db)\n {contest.check_len_raise_transactions()}\n len raise success status\n{len(contest.test_raise_result)} \n id is {id(threading.current_thread())}\n-----------\n{result}\n"
         )
-        exe.shutdown()
+        print(
+            f"\n ---------\n len sell (from db)\n {contest.check_len_sell_transaction()}\n len sell success status\n{len(contest.test_sell_result)} \n id is {id(threading.current_thread())}\n-----------\n{result}\n"
+        )
+        # print("------------\n")
+        # print(f"len raise (geting from db ){id(threading.current_thread())}")
+        # print(contest.check_len_raise_transactions())
+        # print("\n-------------\n")
+        # print("------------\n")
+        # print(
+        #     f"len raise (geting from success status code){id(threading.current_thread())}"
+        # )
+        # print(len(contest.test_raise_result))
+        # print("\n-------------\n")
+        # print("------------\n")
+        # print(f"len sell geting from db {id(threading.current_thread())}")
+        # print(contest.check_len_sell_transaction())
+        # print("\n-------------\n")
+        # print("------------\n")
+        # print(
+        #     f"len sell (geting from success status code){id(threading.current_thread())}"
+        # )
+        # print(len(contest.test_sell_result))
+        # print("\n-------------\n")
+        # print(result)
+
+    print_some()
 
 
-run_tests()
+# def run_tests():
+#     with ThreadPoolExecutor(10) as exe:
+#         exe.submit(
+#             equal_test_result,
+#         )
+#         exe.shutdown()
+
+
+def run_tests(iteration):
+    for i in range(iteration):
+        equal_test_result()
+
+
+def use_multiple_workers():
+    print("in use multiple workers")
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # different thread ids will get dumped
+        futures = [executor.submit(lambda: run_tests(i)) for i in range(3)]
+        for future in futures:
+            try:
+                future.result()
+            except Exception:
+                pass
+
+
+if __name__ == "__main__":
+    use_multiple_workers()
