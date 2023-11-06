@@ -1,20 +1,29 @@
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
 from .models import Transaction, Customer
+from conf import logger
 
 
 def create_a_customer(sender, instance: Transaction, *args, **kwargs):
     if instance.is_raise:
         return
 
-    if instance.to_whom:
-        customer = Customer.objects.select_for_update().get(instance.to_whom.pk)
-        customer.amount += instance.amount
-        customer.save()
-    else:
-        customer = Customer.objects.create(
+    def raise_amount(exist):
+        exist.amount += instance.amount
+        exist.save()
+        logger.logger.info("logged")
+
+    try:
+        exist = Customer.objects.select_for_update().get(
+            phone_number=instance.to_number
+        )
+        raise_amount(exist)
+    except Customer.DoesNotExist:
+        new = Customer.objects.create(
             phone_number=instance.to_number, amount=instance.amount
         )
-        instance.to_whom = customer
+        transaction = Transaction.objects.select_for_update().get(pk=instance.id)
+        transaction.to_whom = new
+        transaction.save()
 
 
-pre_save.connect(create_a_customer, sender=Transaction)
+post_save.connect(create_a_customer, sender=Transaction)

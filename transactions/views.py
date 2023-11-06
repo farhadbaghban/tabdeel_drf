@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from accounts.models import User
-from .models import Transaction, TransactionRaise
+from .models import Transaction, TransactionRaise, Customer
 from .serializers import TransactionRaiseSerializers, TransactionSellSerializers
 
 
@@ -63,7 +63,7 @@ class TransactionSellView(APIView):
             try:
                 with transaction.atomic():
                     valid_data = ser_data.validated_data
-                    transactionraise = Transaction.objects.create(
+                    transactionsell = Transaction.objects.create(
                         amount=valid_data["amount"],
                         user=user,
                         to_number=valid_data["to_number"],
@@ -71,7 +71,7 @@ class TransactionSellView(APIView):
                     seller = User.objects.select_for_update().get(pk=user.id)
                     seller.credit -= valid_data["amount"]
                     seller.save()
-                    ser_data = self.serializer_class(instance=transactionraise)
+                    ser_data = self.serializer_class(instance=transactionsell)
                     return Response(ser_data.data, status=status.HTTP_201_CREATED)
             except ValidationError as ex:
                 return Response(ex.error_dict, status=status.HTTP_400_BAD_REQUEST)

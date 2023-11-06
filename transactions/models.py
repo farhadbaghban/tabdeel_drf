@@ -9,6 +9,7 @@ class Customer(models.Model):
     phone_number = models.CharField(
         max_length=11,
         default="00000000000",
+        unique=True,
         validators=[
             RegexValidator(
                 regex=r"^[0-9]{11}$",
