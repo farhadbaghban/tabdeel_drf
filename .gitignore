@@ -88,4 +88,3 @@ local_settings.py
 .env
 db.sqlite3
 .vscode
-race_test.py
