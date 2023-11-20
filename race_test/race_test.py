@@ -52,7 +52,7 @@ def use_multiple_workers():
     print("in use multiple workers")
     with ThreadPoolExecutor(max_workers=300) as executor:
         # different thread ids will get dumped
-        futures = [executor.submit(lambda: run_tests(i)) for i in range(5)]
+        futures = [executor.submit(lambda: run_tests(i)) for i in range(50)]
         for future in futures:
             try:
                 future.result()
