@@ -1,5 +1,5 @@
 import multiprocessing
-from tabdeel_drf.settings import SECRET_KEY
+from tabdeel_drf.settings import SECRET_KEY, BASE_DIR
 
 bind = "127.0.0.1:8000"
 backlog = 2048
@@ -15,16 +15,16 @@ spew = False
 
 daemon = False
 raw_env = ["DJANGO_SECRET_KEY=SECRET_KEY"]
-pidfile = "/home/farhad/project/tabdeel_drf/log/pid-log.log"
+pidfile = str(BASE_DIR / "log/pid-log.log")
 umask = 0
 user = None
 group = None
-tmp_upload_dir = "/home/farhad/project/tabdeel_drf/log/tmp-log.log"
+tmp_upload_dir = str(BASE_DIR / "log/tmp-log.log")
 
 
-errorlog = "/home/farhad/project/tabdeel_drf/log/error-log.log"
+errorlog = str(BASE_DIR / "log/error-log.log")
 loglevel = "info"
-accesslog = "/home/farhad/project/tabdeel_drf/log/access-log.log"
+accesslog = str(BASE_DIR / "log/access-log.log")
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 proc_name = None
