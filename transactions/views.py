@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from accounts.models import User
+from .utils import customer_raise_amount
 from .models import Transaction, TransactionRaise, Customer
 from .serializers import TransactionRaiseSerializers, TransactionSellSerializers
 
@@ -71,8 +72,11 @@ class TransactionSellView(APIView):
                     seller = User.objects.select_for_update().get(pk=user.id)
                     seller.credit -= valid_data["amount"]
                     seller.save()
-                    ser_data = self.serializer_class(instance=transactionsell)
-                    return Response(ser_data.data, status=status.HTTP_201_CREATED)
+                    if customer_raise_amount(transactionsell):
+                        ser_data = self.serializer_class(instance=transactionsell)
+                        return Response(ser_data.data, status=status.HTTP_201_CREATED)
+                    else:
+                        transaction.set_rollback(True)
             except ValidationError as ex:
                 return Response(ex.error_dict, status=status.HTTP_400_BAD_REQUEST)
         else:

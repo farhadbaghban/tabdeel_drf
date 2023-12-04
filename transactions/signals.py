@@ -33,4 +33,4 @@ def create_a_customer(sender, instance: Transaction, *args, **kwargs):
                 transaction.set_rollback(True)
 
 
-post_save.connect(create_a_customer, sender=Transaction)
+# post_save.connect(create_a_customer, sender=Transaction)

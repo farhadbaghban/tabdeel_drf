@@ -22,9 +22,9 @@ group = None
 tmp_upload_dir = str(BASE_DIR / "log/tmp-log.log")
 
 
-errorlog = str(BASE_DIR / "log/error-log.log")
+# errorlog = str(BASE_DIR / "log/error-log.log")
 loglevel = "info"
-accesslog = str(BASE_DIR / "log/access-log.log")
+# accesslog = str(BASE_DIR / "log/access-log.log")
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 proc_name = None
