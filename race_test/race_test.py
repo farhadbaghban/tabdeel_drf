@@ -58,7 +58,13 @@ def use_multiple_threads():
     print("in use multiple Threads\n")
     tries = [i for i in range(50)]
     with ThreadPoolExecutor(max_workers=300) as executor:
-        executor.map(run_tests, tries)
+        # executor.map(run_tests, tries)
+        futures = [executor.submit(run_tests, i) for i in range(10)]
+        try:
+            for future in futures:
+                print(future.result())
+        except ValueError as e:
+            print(e)
     print_some()
     end = time.perf_counter()
     print(f"It took {end - start} seconds to finish")
@@ -67,11 +73,17 @@ def use_multiple_threads():
 def use_multiple_process():
     start = time.perf_counter()
     print("in use multiple Process")
-    tries = [i for i in range(50)]
+    # tries = [i for i in range(50)]
     with ProcessPoolExecutor(
         max_workers=multiprocessing.cpu_count() * 2 + 1
     ) as executor:
-        executor.map(run_tests, tries)
+        # executor.map(run_tests, tries)
+        futures = [executor.submit(run_tests, i) for i in range(10)]
+        try:
+            for future in futures:
+                print(future.result())
+        except ValueError as e:
+            print(e)
     print_some()
     end = time.perf_counter()
     print(f"It took {end - start} seconds to finish")

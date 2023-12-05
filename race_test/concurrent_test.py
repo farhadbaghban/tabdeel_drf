@@ -5,8 +5,9 @@ from decimal import Decimal
 class ConcurrentTest:
     PASSWORD = "123456"
 
-    def __init__(self):
-        self.session = requests.Session()
+    def __init__(self, register_data, username_session):
+        self.session = username_session
+        self.register_data = register_data
         self.test_raise_result = []
         self.test_sell_result = []
         self.register_url = "http://localhost:8000/accounts/users/register/"
@@ -17,14 +18,7 @@ class ConcurrentTest:
         self.sell_url = "http://localhost:8000/transactions/sell/"
 
     def register(self):
-        register_data = {
-            "full_name": "farhad test",
-            "phone_number": "09397330682",
-            "email": "baghbanfarhad@gmail.com",
-            "id_card_number": "2050086733",
-            "password": self.PASSWORD,
-        }
-        response = self.session.post(self.register_url, data=register_data)
+        response = self.session.post(self.register_url, data=self.register_data)
         self.user_info = response.json()
 
     def login_user(self):
