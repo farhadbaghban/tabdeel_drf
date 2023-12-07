@@ -10,6 +10,8 @@ class ConcurrentTest:
         self.register_data = register_data
         self.test_raise_result = []
         self.test_sell_result = []
+        self.status_cell = 0
+        self.status_raise = 0
         self.register_url = "http://localhost:8000/accounts/users/register/"
         self.login_url = "http://localhost:8000/accounts/users/login/"
         self.logout_url = "http://localhost:8000/accounts/users/logout/"
@@ -34,7 +36,8 @@ class ConcurrentTest:
     def raise_credit(self, raise_amount):
         raise_data = {"is_raise": True, "amount": Decimal(raise_amount)}
         res = self.session.post(self.raise_credit_url, data=raise_data)
-        if res.status_code == 201:
+        self.status_raise = res.status_code
+        if self.status_raise == 201:
             res = res.json()
             res = {"date": res["date"], "amount": res["amount"]}
             self.test_raise_result.append(res)
@@ -42,7 +45,8 @@ class ConcurrentTest:
     def sell_amount_to_number(self, sell_amount, to_number):
         sell_data = {"amount": Decimal(sell_amount), "to_number": to_number}
         res = self.session.post(self.sell_url, data=sell_data)
-        if res.status_code == 201:
+        self.status_cell = res.status_code
+        if self.status_cell == 201:
             res = res.json()
             res = {"date": res["date"], "amount": res["amount"]}
             self.test_sell_result.append(res)

@@ -46,11 +46,21 @@ class RunTest:
         contest.login_user()
         for i in range(self.raise_num):
             contest.raise_credit(impdata.credit_raises[i]["amount"])
+            with open(
+                f"./race_test/statuscodes/{username}_{os.getpid()}_{threading.get_ident()}.txt",
+                mode="a",
+            ) as a:
+                a.write(f"raise_status is : {str(contest.status_raise)}\n")
         for i in range(self.customer_num):
             contest.sell_amount_to_number(
                 impdata.sell_amounts[i]["amount"],
                 impdata.phone_numbers[i]["phone_number"],
             )
+            with open(
+                f"./race_test/statuscodes/{username}_{os.getpid()}_{threading.get_ident()}.txt",
+                mode="a",
+            ) as a:
+                a.write(f"cell_status is : {str(contest.status_cell)}\n")
         equl_positive = Decimal(0)
         equl_mines = Decimal(0)
         for test in contest.test_raise_result:
