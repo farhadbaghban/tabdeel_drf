@@ -35,45 +35,32 @@ class RunTest:
         register_data = impdata.register_data
         session = impdata.username_session[0]
         username = register_data["full_name"]
-        print(register_data)
-        print(session)
-        print(username)
         session = session[username]
-        print(register_data)
-        print(session)
         contest = concurrent_test.ConcurrentTest(register_data, session)
         contest.register()
         contest.login_user()
-        for i in range(self.raise_num):
-            contest.raise_credit(impdata.credit_raises[i]["amount"])
-            with open(
-                f"./race_test/statuscodes/{username}_{os.getpid()}_{threading.get_ident()}.txt",
-                mode="a",
-            ) as a:
-                a.write(f"raise_status is : {str(contest.status_raise)}\n")
-        for i in range(self.customer_num):
-            contest.sell_amount_to_number(
-                impdata.sell_amounts[i]["amount"],
-                impdata.phone_numbers[i]["phone_number"],
-            )
-            with open(
-                f"./race_test/statuscodes/{username}_{os.getpid()}_{threading.get_ident()}.txt",
-                mode="a",
-            ) as a:
-                a.write(f"cell_status is : {str(contest.status_cell)}\n")
-        equl_positive = Decimal(0)
-        equl_mines = Decimal(0)
-        for test in contest.test_raise_result:
-            equl_positive += Decimal(test["amount"])
-        for test in contest.test_sell_result:
-            equl_mines += Decimal(test["amount"])
-        result = equl_positive - equl_mines
-        print(
-            f"\n ---------\n len raise (from db)\n {contest.check_len_raise_transactions()}\n len raise success status\n{len(contest.test_raise_result)} \n id is {id(threading.current_thread())}\n-----------\n{result}\n"
-        )
-        print(
-            f"\n ---------\n len sell (from db)\n {contest.check_len_sell_transaction()}\n len sell success status\n{len(contest.test_sell_result)} \n id is {id(threading.current_thread())}\n-----------\n{result}\n"
-        )
+        with open(
+            f"./race_test/statuscodes/raise_status.txt",
+            mode="a",
+        ) as a:
+            for i in range(self.raise_num):
+                contest.raise_credit(impdata.credit_raises[i]["amount"])
+                a.write(
+                    f"raise_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}\n"
+                )
+        with open(
+            f"./race_test/statuscodes/cell_status.txt",
+            mode="a",
+        ) as a:
+            for i in range(self.customer_num):
+                contest.sell_amount_to_number(
+                    impdata.sell_amounts[i]["amount"],
+                    impdata.phone_numbers[i]["phone_number"],
+                )
+
+                a.write(
+                    f"cell_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}\n"
+                )
 
 
 def use_multiple_threads():
@@ -86,13 +73,9 @@ def use_multiple_threads():
         futures = [
             executor.submit(test.runnig_test, impdata) for impdata in test.test_impdata
         ]
-        try:
-            for future in futures:
-                print(future.result())
-        except ValueError as e:
-            print(e)
     end = time.perf_counter()
-    print(f"It took {end - start} seconds to finish")
+    print(f"\nIt took {end - start} seconds to finish\n")
+    call(["python", "./race_test/test_result.py"])
 
 
 def use_multiple_process():
@@ -113,7 +96,8 @@ def use_multiple_process():
         except ValueError as e:
             print(e)
     end = time.perf_counter()
-    print(f"It took {end - start} seconds to finish")
+    print(f"\nIt took {end - start} seconds to finish\n")
+    call(["python", "./race_test/test_result.py"])
 
 
 if __name__ == "__main__":

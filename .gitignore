@@ -88,4 +88,4 @@ local_settings.py
 .env
 db.sqlite3
 .vscode
-./race_test/statuscodes
+race_test/statuscodes/
