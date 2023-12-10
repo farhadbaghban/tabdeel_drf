@@ -1,5 +1,5 @@
 from django.shortcuts import get_list_or_404
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,7 +18,9 @@ class TransactionRaiseView(APIView):
     ]
 
     def get(self, request, *args, **kwargs):
-        transactions = get_list_or_404(TransactionRaise, user=request.user)
+        transactions = get_list_or_404(
+            TransactionRaise, user=request.user, is_raise=True
+        )
         ser_data = self.serializer_class(instance=transactions, many=True)
         return Response(ser_data.data, status=status.HTTP_200_OK)
 
@@ -53,7 +55,7 @@ class TransactionSellView(APIView):
     ]
 
     def get(self, request, *args, **kwargs):
-        transactions = get_list_or_404(Transaction, user=request.user)
+        transactions = get_list_or_404(Transaction, user=request.user, is_raise=False)
         ser_data = self.serializer_class(instance=transactions, many=True)
         return Response(ser_data.data, status=status.HTTP_200_OK)
 
@@ -63,6 +65,7 @@ class TransactionSellView(APIView):
         if ser_data.is_valid():
             try:
                 with transaction.atomic():
+                    sid = transaction.savepoint()
                     valid_data = ser_data.validated_data
                     transactionsell = Transaction.objects.create(
                         amount=valid_data["amount"],
@@ -72,13 +75,19 @@ class TransactionSellView(APIView):
                     seller = User.objects.select_for_update().get(pk=user.id)
                     seller.credit -= valid_data["amount"]
                     seller.save()
+
                     if customer_raise_amount(transactionsell):
                         ser_data = self.serializer_class(instance=transactionsell)
+                        transaction.savepoint_commit(sid)
                         return Response(ser_data.data, status=status.HTTP_201_CREATED)
                     else:
-                        transaction.set_rollback(True)
+                        raise IntegrityError
+
             except ValidationError as ex:
+                transaction.savepoint_rollback(sid)
                 return Response(ex.error_dict, status=status.HTTP_400_BAD_REQUEST)
+            except IntegrityError as ex:
+                transaction.savepoint_rollback(sid)
+                return Response(ex.__dict__, status=status.HTTP_409_CONFLICT)
         else:
-            print(ser_data.errors)
             return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)

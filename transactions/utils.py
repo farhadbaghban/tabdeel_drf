@@ -9,6 +9,7 @@ def add_customer(instance, customer):
     transaction = Transaction.objects.select_for_update().get(pk=instance.id)
     transaction.to_whom = customer
     transaction.save()
+    return True
 
 
 def customer_raise_amount(instance: Transaction, *args, **kwargs):
@@ -18,15 +19,19 @@ def customer_raise_amount(instance: Transaction, *args, **kwargs):
         )
         exist.amount += instance.amount
         exist.save()
-        add_customer(instance, exist)
-        logger.logger.info("logged")
-        return True
+        if add_customer(instance, exist):
+            logger.logger.info("logged")
+            return True
+        else:
+            return False
     except Customer.DoesNotExist:
         try:
             new = Customer.objects.create(
                 phone_number=instance.to_number, amount=instance.amount
             )
-            add_customer(instance, new)
-            return True
+            if add_customer(instance, new):
+                return True
+            else:
+                return False
         except IntegrityError:
             return False

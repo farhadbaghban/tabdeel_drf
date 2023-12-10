@@ -46,7 +46,7 @@ class RunTest:
             for i in range(self.raise_num):
                 contest.raise_credit(impdata.credit_raises[i]["amount"])
                 a.write(
-                    f"raise_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}\n"
+                    f"raise_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}  records in db {contest.check_len_raise_transactions()} and user credit is {contest.check_credit_user()}\n"
                 )
         with open(
             f"./race_test/statuscodes/cell_status.txt",
@@ -59,7 +59,7 @@ class RunTest:
                 )
 
                 a.write(
-                    f"cell_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}\n"
+                    f"cell_status is : {str(contest.status_raise)} from {username} at this process : {os.getpid()} and this thread : {threading.get_ident()}  records in db {contest.check_len_sell_transaction()} and user credit is {contest.check_credit_user()}\n"
                 )
 
 
@@ -83,10 +83,9 @@ def use_multiple_process():
     test = RunTest()
     test.get_input()
     test.create_impdata()
-    with ProcessPoolExecutor(
-        max_workers=multiprocessing.cpu_count() * 2 + 1
-    ) as executor:
+    with ProcessPoolExecutor(max_workers=50) as executor:
         # executor.map(run_tests, tries)
+        # max_workers=multiprocessing.cpu_count() * 2 + 1
         futures = [
             executor.submit(test.runnig_test, impdata) for impdata in test.test_impdata
         ]
